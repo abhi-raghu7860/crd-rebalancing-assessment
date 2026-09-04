@@ -1,5 +1,6 @@
 package com.crd.rebalance;
 
+import com.crd.rebalance.report.TestLog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -93,6 +94,10 @@ class BusinessRuleTest {
     @DisplayName("RB-055 zero variance is unreachable, so the band is the real acceptance criterion")
     void exactZeroVarianceIsUnreachable() {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
+
+        TestLog.info("FINDING: zero variance is unreachable with whole shares (AMB-02)");
+        TestLog.check("max residual variance (pts)", "> 0", result.maxAbsoluteVariancePct());
+        TestLog.info("acceptance criterion must be a tolerance band, not equality");
 
         // Hitting 20.00% exactly would take 66.6667 IBM shares. Whole shares cannot express that,
         // so "zero target variance" has to be read as "inside tolerance", not as equality.

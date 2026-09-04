@@ -75,6 +75,26 @@ IntelliJ picks up the Maven wrapper automatically from `.mvn/wrapper/`, so it us
 version as the command line. If it ever prompts for a Maven home, point it at the wrapper rather
 than a system install.
 
+### Console output
+
+The run narrates itself. Each suite, each test and each result is printed as it happens, and the
+tests that matter most log their actual computed values so you can see what was verified rather
+than just that something passed.
+
+```
+  [ RB-001 the output column ]
+      > buys 66 IBM and sells 45 ORCL, trading nothing else
+        - IBM signed quantity        expected 66    actual 66
+        - ORCL signed quantity       expected -45   actual -45
+        - MSFT / AAPL / HD           expected 0 each  actual 0 / 0 / 0
+        PASS  (19 ms)
+```
+
+The six cases that exposed a specification problem announce themselves with a `FINDING:` line, so
+`.\mvnw.cmd test | findstr FINDING` lists them all. Failures print the assertion diff inline.
+
+Silence it with `-Dtest.console=off`.
+
 ### Test report
 
 Every run writes an ExtentReports HTML dashboard to `target/extent-report/index.html`. Open it in a

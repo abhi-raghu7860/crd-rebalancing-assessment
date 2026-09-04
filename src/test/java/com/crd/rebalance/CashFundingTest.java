@@ -1,5 +1,6 @@
 package com.crd.rebalance;
 
+import com.crd.rebalance.report.TestLog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -47,6 +48,12 @@ class CashFundingTest {
         assertThat(buysFirst.signedQuantity("ORCL")).isEqualTo(sellsFirst.signedQuantity("ORCL"));
         assertThat(buysFirst.cashImpact()).isEqualByComparingTo(sellsFirst.cashImpact());
 
+        TestLog.info("FINDING: identical orders, identical net cash, only the sequence differs");
+        TestLog.check("sells first: min running cash", "0", sellsFirst.minimumRunningCash());
+        TestLog.check("buys first: min running cash", "-9900", buysFirst.minimumRunningCash());
+        TestLog.check("fundable sells-first / buys-first", "true / false",
+                sellsFirst.isFundable() + " / " + buysFirst.isFundable());
+
         assertThat(sellsFirst.orders()).first().extracting(Order::side).isEqualTo(Side.SELL);
         assertThat(sellsFirst.isFundable()).isTrue();
 
@@ -68,6 +75,12 @@ class CashFundingTest {
                 Security.of("BBB", "40", "50", "3")));
 
         RebalanceResult result = engine.rebalance(account);
+
+        TestLog.info("FINDING: truncation is cash neutral on ABC by coincidence, not by construction");
+        TestLog.check("buy leg (divides exactly)", "10000", result.totalBuyNotional());
+        TestLog.check("sell leg (3333.33 -> 3333)", "9999", result.totalSellNotional());
+        TestLog.check("net cash impact", "-1", result.cashImpact());
+        TestLog.check("block fundable", false, result.isFundable());
 
         assertThat(result.signedQuantity("AAA")).isEqualTo(10_000L);
         assertThat(result.signedQuantity("BBB")).isEqualTo(-3_333L);

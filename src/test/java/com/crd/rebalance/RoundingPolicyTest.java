@@ -1,5 +1,6 @@
 package com.crd.rebalance;
 
+import com.crd.rebalance.report.TestLog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -53,6 +54,13 @@ class RoundingPolicyTest {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc(),
                 RebalanceConfig.defaults().withRoundingPolicy(RoundingPolicy.HALF_UP));
 
+        TestLog.info("FINDING: rounding rule is unspecified (AMB-01)");
+        TestLog.check("IBM quantity under HALF_UP", 67, result.signedQuantity("IBM"));
+        TestLog.check("cost of buy vs cash raised", "10050 vs 9900", result.totalBuyNotional()
+                + " vs " + result.totalSellNotional());
+        TestLog.check("net cash impact", "-150", result.cashImpact());
+        TestLog.check("block fundable", false, result.isFundable());
+
         // 66.6667 rounds up to 67 but 45.4545 rounds down to 45, so the buy costs $10,050
         // against $9,900 raised. Account ABC is 100% invested and holds no cash to cover it.
         assertThat(result.signedQuantity("IBM")).isEqualTo(67L);
@@ -68,6 +76,11 @@ class RoundingPolicyTest {
     void roundUpOvershootsTheTarget() {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc(),
                 RebalanceConfig.defaults().withRoundingPolicy(RoundingPolicy.ROUND_UP));
+
+        TestLog.info("FINDING: ROUND_UP crosses the target instead of approaching it");
+        TestLog.check("ORCL quantity", -46, result.signedQuantity("ORCL"));
+        TestLog.check("ORCL variance before -> after", "+0.10 -> -0.12",
+                "+0.10 -> " + result.postTradeVariancePct().get("ORCL"));
 
         assertThat(result.signedQuantity("IBM")).isEqualTo(67L);
         assertThat(result.signedQuantity("ORCL")).isEqualTo(-46L);

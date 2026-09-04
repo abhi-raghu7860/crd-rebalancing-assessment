@@ -1,1 +1,2 @@
+com.crd.rebalance.report.ConsoleReportListener
 com.crd.rebalance.report.ExtentReportListener

@@ -1,5 +1,6 @@
 package com.crd.rebalance;
 
+import com.crd.rebalance.report.TestLog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,11 @@ class GoldenScenarioTest {
         @DisplayName("buys 66 IBM and sells 45 ORCL, trading nothing else")
         void producesTheExpectedOrders() {
             RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
+
+            TestLog.check("IBM signed quantity", 66, result.signedQuantity("IBM"));
+            TestLog.check("ORCL signed quantity", -45, result.signedQuantity("ORCL"));
+            TestLog.check("MSFT / AAPL / HD", "0 each", result.signedQuantity("MSFT")
+                    + " / " + result.signedQuantity("AAPL") + " / " + result.signedQuantity("HD"));
 
             assertThat(result.signedQuantity("IBM")).isEqualTo(66L);
             assertThat(result.signedQuantity("ORCL")).isEqualTo(-45L);
@@ -112,6 +118,10 @@ class GoldenScenarioTest {
         void blockIsCashNeutral() {
             RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
 
+            TestLog.check("total buy notional", "9900", result.totalBuyNotional());
+            TestLog.check("total sell notional", "9900", result.totalSellNotional());
+            TestLog.check("net cash impact", "0", result.cashImpact());
+
             assertThat(result.totalBuyNotional()).isEqualByComparingTo("9900");
             assertThat(result.totalSellNotional()).isEqualByComparingTo("9900");
             assertThat(result.cashImpact()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -127,6 +137,10 @@ class GoldenScenarioTest {
         @DisplayName("residual variance is 0.10 points, the closest whole shares can get")
         void residualVarianceIsWithinATenthOfAPoint() {
             RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
+
+            TestLog.check("IBM residual variance (pts)", "-0.10", result.postTradeVariancePct().get("IBM"));
+            TestLog.check("ORCL residual variance (pts)", "0.10", result.postTradeVariancePct().get("ORCL"));
+            TestLog.info("exact 20.00% would need 66.6667 IBM and 45.4545 ORCL shares");
 
             // IBM lands at 19.90% and ORCL at 20.10%; exact 20% needs fractional shares.
             assertThat(result.postTradeVariancePct().get("IBM")).isEqualByComparingTo("-0.10");

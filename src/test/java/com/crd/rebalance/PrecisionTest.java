@@ -1,5 +1,6 @@
 package com.crd.rebalance;
 
+import com.crd.rebalance.report.TestLog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,10 @@ class PrecisionTest {
                 Security.of("BBB", "50", "57", "10")));
 
         RebalanceResult result = engine.rebalance(account);
+
+        TestLog.info("FINDING: binary floating point loses a share on this input");
+        TestLog.check("BigDecimal 7000/0.07", 100_000, result.signedQuantity("AAA"));
+        TestLog.check("double     7000/0.07", 99_999, (long) (7000 / 0.07));
 
         assertThat(result.signedQuantity("AAA")).isEqualTo(100_000L);
         assertThat((long) (7000 / 0.07))
