@@ -50,15 +50,28 @@ Four more ambiguities, the risk analysis, and every assumption are in
 
 Java 21 required. Maven comes from the bundled wrapper, so there is nothing to install.
 
-```
-mvnw.cmd test                                  # full suite
-mvnw.cmd -Dtest=GoldenScenarioTest test        # just the assessment scenario
+```powershell
+.\mvnw.cmd test                                # full suite
+.\mvnw.cmd -Dtest=GoldenScenarioTest test      # just the assessment scenario
 ```
 
-On macOS or Linux use `./mvnw` instead. Results are written to `target/surefire-reports/`.
-The project also imports into IntelliJ directly from `pom.xml`.
+The `.\` prefix is required in PowerShell. In CMD use `mvnw.cmd test`; on macOS or Linux use
+`./mvnw test`. The project also imports into IntelliJ directly from `pom.xml`.
 
 **Current status: 89 tests, all passing.**
+
+### Test report
+
+Every run writes an ExtentReports HTML dashboard to `target/extent-report/index.html`. Open it in a
+browser; no server or CLI is needed and it works with no network connection.
+
+```powershell
+.\mvnw.cmd test; start target\extent-report\index.html
+```
+
+It shows a pass/fail donut, the run environment, and every test grouped by suite with its duration.
+Failures carry the assertion message and stack trace inline. Raw JUnit XML is also written to
+`target/surefire-reports/` for CI consumption.
 
 ---
 

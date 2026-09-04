@@ -2,12 +2,17 @@
 
 ## Run
 
-```
-mvnw.cmd test                             # all 89 tests
-mvnw.cmd -Dtest=GoldenScenarioTest test   # assessment scenario only
+```powershell
+.\mvnw.cmd test                             # all 89 tests
+.\mvnw.cmd -Dtest=GoldenScenarioTest test   # assessment scenario only
+start target\extent-report\index.html       # open the HTML report
 ```
 
-Java 21. Maven via wrapper (nothing to install). Reports in `target/surefire-reports/`.
+Java 21. Maven via wrapper (nothing to install). `.\` prefix is required in PowerShell only.
+
+Output:
+- `target/extent-report/index.html` - ExtentReports dashboard, offline, open in any browser
+- `target/surefire-reports/` - raw JUnit XML for CI
 
 ## Stack
 
@@ -19,6 +24,7 @@ Java 21. Maven via wrapper (nothing to install). Reports in `target/surefire-rep
 | Data-driven | `@ParameterizedTest` + `@CsvFileSource` |
 | Property gen | `java.util.Random`, fixed seeds (no external lib) |
 | Build | Maven 3.9.16 wrapper, Surefire 3.5.6 |
+| Reporting | ExtentReports 5.1.2 (Spark), offline mode |
 | Money type | `BigDecimal` only, never `double` |
 
 ## Code under test (`src/main/java/com/crd/rebalance`)
@@ -60,6 +66,7 @@ Then: apply lot size, drop if below min notional, drop if zero. Sells emitted be
 | `InvariantPropertyTest` | RB-090..096 | 7 invariants over 1,400 generated accounts |
 | `DataDrivenTest` | RB-100..101 | CSV acceptance data |
 | `Fixtures` | - | Shared test data (Account ABC) |
+| `report/ExtentReportListener` | - | Builds the HTML report. Auto-registered via ServiceLoader, no test class references it. |
 
 73 documented cases run as 89 tests. Parameterised cases expand: once per policy, per seed, per CSV row.
 
