@@ -1,0 +1,10 @@
+description,totalAssets,targetA,currentA,priceA,targetB,currentB,priceB,expectedA,expectedB
+exact division on both sides,100000,50,40,100,50,60,200,100,-50
+buy truncates down from 66.67,100000,20,10,150,80,90,100,66,-100
+sell truncates toward zero from 45.45,100000,50,60,220,50,40,100,-45,100
+gap worth less than one share does not trade,100000,20.1,20,450,79.9,80,10,0,-10
+full exit and full entry,10000,0,100,50,100,0,25,-200,400
+penny priced security,100000,60,50,0.01,40,50,100,1000000,-100
+price carrying cents,100000,20,10,150.37,80,90,100,66,-100
+fractional target percentages,100000,33.25,33,100,66.75,67,100,2,-2
+already on target,100000,50,50,123.45,50,50,67.89,0,0
