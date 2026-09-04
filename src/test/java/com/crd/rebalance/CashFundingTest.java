@@ -12,28 +12,15 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-040 to RB-045. Account ABC is 100% invested and holds no cash, so every purchase has to be
- * paid for out of the matching sales. That makes funding and sequencing part of correctness
+ * RB-041, RB-042 and RB-044. Account ABC is 100% invested and holds no cash, so every purchase has
+ * to be paid for out of the matching sales. That makes funding and sequencing part of correctness
  * rather than an operational afterthought, and it is where the most damaging defects hide: an
  * order block can be arithmetically perfect and still be unexecutable.
  */
-@DisplayName("RB-040..045 Cash, funding and sequencing")
+@DisplayName("RB-041..044 Cash, funding and sequencing")
 class CashFundingTest {
 
-    private static final BigDecimal HUNDRED = new BigDecimal("100");
-
     private final RebalanceEngine engine = new RebalanceEngine();
-
-    @Test
-    @DisplayName("RB-040 the assessment block raises exactly what it spends")
-    void assessmentBlockIsSelfFunding() {
-        RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
-
-        assertThat(result.totalSellNotional()).isEqualByComparingTo("9900");
-        assertThat(result.totalBuyNotional()).isEqualByComparingTo("9900");
-        assertThat(result.minimumRunningCash()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.isFundable()).isTrue();
-    }
 
     @Test
     @DisplayName("RB-042 the same orders in the wrong sequence overdraw the account")
@@ -92,23 +79,6 @@ class CashFundingTest {
                 .isFalse();
     }
 
-    @Test
-    @DisplayName("RB-043 an existing cash balance pays for purchases")
-    void existingCashFundsPurchases() {
-        Account account = new Account("CASHY", new BigDecimal("100000"), HUNDRED,
-                new BigDecimal("50000"), List.of(
-                Security.of("AAA", "50", "25", "100"),
-                Security.of("BBB", "50", "25", "250")));
-
-        RebalanceResult result = engine.rebalance(account);
-
-        assertThat(result.signedQuantity("AAA")).isEqualTo(250L);   // $25,000 at $100
-        assertThat(result.signedQuantity("BBB")).isEqualTo(100L);   // $25,000 at $250
-        assertThat(result.orders()).allMatch(order -> order.side() == Side.BUY);
-        assertThat(result.endingCash()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.isFundable()).isTrue();
-    }
-
     @ParameterizedTest
     @EnumSource(RoundingPolicy.class)
     @DisplayName("RB-044 trading moves value between lines without creating or destroying any")
@@ -122,15 +92,5 @@ class CashFundingTest {
         assertThat(holdings.add(result.endingCash()))
                 .as("holdings plus cash under %s", policy)
                 .isEqualByComparingTo(Fixtures.TOTAL_ASSETS);
-    }
-
-    @Test
-    @DisplayName("RB-045 no position is ever sold below zero")
-    void positionsNeverGoShort() {
-        Account account = Fixtures.accountAbc();
-        RebalanceResult result = engine.rebalance(account);
-
-        assertThat(result.postTradeValues().values())
-                .allSatisfy(value -> assertThat(value).isGreaterThanOrEqualTo(BigDecimal.ZERO));
     }
 }

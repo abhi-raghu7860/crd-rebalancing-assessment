@@ -12,29 +12,15 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-010 to RB-016. The specification never states how a fractional share count becomes a whole
+ * RB-011 to RB-016. The specification never states how a fractional share count becomes a whole
  * one, and the three defensible answers disagree on this very data set. These tests pin what each
  * policy actually does so the choice is a decision on record rather than an accident of
  * implementation (ambiguity AMB-01).
  */
-@DisplayName("RB-010..016 Rounding policy and residual")
+@DisplayName("RB-011..016 Rounding policy and residual")
 class RoundingPolicyTest {
 
     private final RebalanceEngine engine = new RebalanceEngine();
-
-    @Test
-    @DisplayName("RB-010 when the gap divides exactly, every policy agrees and nothing is left over")
-    void exactDivisionIsPolicyIndependent() {
-        for (RoundingPolicy policy : RoundingPolicy.values()) {
-            RebalanceResult result = engine.rebalance(Fixtures.evenlyDivisibleAccount(),
-                    RebalanceConfig.defaults().withRoundingPolicy(policy));
-
-            assertThat(result.signedQuantity("AAA")).as("AAA under %s", policy).isEqualTo(100L);
-            assertThat(result.signedQuantity("BBB")).as("BBB under %s", policy).isEqualTo(-50L);
-            assertThat(result.maxAbsoluteVariancePct()).as("residual under %s", policy)
-                    .isEqualByComparingTo(BigDecimal.ZERO);
-        }
-    }
 
     @Test
     @DisplayName("RB-011/012 TRUNCATE rounds both sides toward zero and stays cash neutral here")

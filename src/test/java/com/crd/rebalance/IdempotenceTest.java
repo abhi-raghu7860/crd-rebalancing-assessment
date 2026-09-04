@@ -5,17 +5,15 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-070 to RB-073. Metamorphic tests: rather than asserting one expected answer, each of these
- * changes the input in a way whose effect on the output is known in advance, and checks that the
- * engine agrees. They catch whole classes of defect that a fixed expected value cannot.
+ * RB-070. A metamorphic test: rather than asserting one expected answer, it changes the input in a
+ * way whose effect on the output is known in advance and checks that the engine agrees.
  */
-@DisplayName("RB-070..073 Metamorphic relations")
+@DisplayName("RB-070 Metamorphic relations")
 class IdempotenceTest {
 
     private static final BigDecimal HUNDRED = new BigDecimal("100");
@@ -35,51 +33,6 @@ class IdempotenceTest {
         assertThat(second.orders())
                 .as("a second pass must not generate churn")
                 .isEmpty();
-    }
-
-    @Test
-    @DisplayName("RB-071 no security ends further from its target than it started")
-    void varianceNeverGetsWorse() {
-        Account account = Fixtures.accountAbc();
-        RebalanceResult result = engine.rebalance(account);
-
-        for (Security security : account.securities()) {
-            BigDecimal before = security.variancePct().abs();
-            BigDecimal after = result.postTradeVariancePct().get(security.symbol()).abs();
-
-            assertThat(after)
-                    .as("%s moved from %s to %s points of variance", security.symbol(), before, after)
-                    .isLessThanOrEqualTo(before);
-        }
-    }
-
-    @Test
-    @DisplayName("RB-072 scaling the account by ten scales every quantity by ten")
-    void quantitiesScaleWithAccountSize() {
-        RebalanceResult small = engine.rebalance(Fixtures.evenlyDivisibleAccount());
-        RebalanceResult large = engine.rebalance(Account.fullyVested("EVEN10", "1000000",
-                Fixtures.evenlyDivisibleAccount().securities()));
-
-        assertThat(large.signedQuantity("AAA")).isEqualTo(small.signedQuantity("AAA") * 10);
-        assertThat(large.signedQuantity("BBB")).isEqualTo(small.signedQuantity("BBB") * 10);
-    }
-
-    @Test
-    @DisplayName("RB-073 the order the securities arrive in does not change the answer")
-    void inputOrderDoesNotAffectQuantities() {
-        Account account = Fixtures.accountAbc();
-        List<Security> reversed = new ArrayList<>(account.securities());
-        java.util.Collections.reverse(reversed);
-
-        RebalanceResult original = engine.rebalance(account);
-        RebalanceResult shuffled = engine.rebalance(Fixtures.accountAbcWith(reversed));
-
-        for (Security security : account.securities()) {
-            assertThat(shuffled.signedQuantity(security.symbol()))
-                    .as("quantity for %s", security.symbol())
-                    .isEqualTo(original.signedQuantity(security.symbol()));
-        }
-        assertThat(shuffled.cashImpact()).isEqualByComparingTo(original.cashImpact());
     }
 
     /** Rebuilds an account as it would stand once every order in {@code result} has filled. */

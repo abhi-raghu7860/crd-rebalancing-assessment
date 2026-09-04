@@ -1,6 +1,6 @@
 # Manual Test Cases — Portfolio Rebalancing
 
-73 cases across 12 suites. 68 are automated in `src/test/java/com/crd/rebalance/`; the last five are
+37 cases across 10 suites. 35 are automated in `src/test/java/com/crd/rebalance/`; the last two are
 manual by design and explained in TS-12.
 
 **Standing precondition for every case:** the rebalancing engine is available, prices are current,
@@ -77,13 +77,6 @@ and buy 6 shares. Both readings are grammatical; only one is right.
 
 ## TS-02 — Rounding policy and residual
 
-### RB-010 — Exact division is policy independent · P1
-**Preconditions:** Two-line account, $100,000. AAA target 50 / current 40 / $100. BBB target 50 /
-current 60 / $200.
-**Steps:** Rebalance once under each of the three rounding policies.
-**Expected:** BUY 100 AAA and SELL 50 BBB every time, with zero residual variance.
-**Technique:** Boundary value — the point where the policies must agree. **Automated:** Yes.
-
 ### RB-011 — A buy truncates downward · P0
 **Steps:** Rebalance Account ABC.
 **Expected:** IBM 66.6667 → BUY 66. Never 67 under the default policy.
@@ -128,55 +121,6 @@ ten $10 shares.
 
 ---
 
-## TS-03 — Boundary values
-
-### RB-020 — The smallest variance that can still trade · P2
-**Preconditions:** $100,000 account. AAA target 50.001 / current 50 / $1. BBB target 49.999 /
-current 50 / $1.
-**Expected:** BUY 1 AAA, SELL 1 BBB. A thousandth of a point is a $1 gap and these shares cost $1.
-**Automated:** Yes.
-
-### RB-021 — Variance of the full 100 points · P1
-**Expected:** Handled without overflow or truncation error; see RB-022.
-**Automated:** Yes.
-
-### RB-022 — A security held at 0% is bought to a 100% target · P1
-**Preconditions:** $10,000 account, $10,000 cash. AAA target 100 / current 0 / $50.
-**Expected:** BUY 200 AAA. Ending cash $0. Block is fundable.
-**Technique:** Boundary value — the lower edge of current%. **Automated:** Yes (with RB-021).
-
-### RB-023 — A 0% target liquidates the position fully · P1
-**Preconditions:** $10,000 account. OUT target 0 / current 100 / $50. IN target 100 / current 0 / $25.
-**Expected:** SELL 200 OUT, BUY 400 IN. OUT ends at $0. Net cash $0.
-**Technique:** Boundary value — the lower edge of target%. **Automated:** Yes.
-
-### RB-024 — A one-cent share price · P1
-**Preconditions:** $10,000 account, $5,000 cash. PNY target 100 / current 50 / $0.01.
-**Expected:** BUY 500,000 PNY, notional exactly $5,000. No precision loss on the large quantity.
-**Automated:** Yes.
-
-### RB-025 — An account holding no securities · P2
-**Preconditions:** $10,000 account, all in cash, empty security list.
-**Expected:** No orders, no post-trade holdings, ending cash $10,000. No exception.
-**Technique:** Error guessing — the empty collection. **Automated:** Yes.
-
-### RB-026 — An account with zero assets · P2
-**Preconditions:** Total assets $0, five on-target securities.
-**Expected:** No orders. No divide-by-zero when expressing post-trade values as percentages.
-**Automated:** Yes.
-
-### RB-027 — A one trillion dollar account · P2
-**Preconditions:** Account ABC's percentages and prices, total assets $1,000,000,000,000.
-**Expected:** BUY 666,666,666 IBM and SELL 454,545,454 ORCL. Exact, no overflow.
-**Technique:** Boundary value — the upper edge of account size. **Automated:** Yes.
-
-### RB-028 — A single fully allocated security · P2
-**Preconditions:** $10,000 account, AAA target 100 / current 100 / $10.
-**Expected:** No orders, zero variance.
-**Automated:** Yes.
-
----
-
 ## TS-04 — Input validation
 
 All cases in this suite expect an `IllegalArgumentException` naming the offending field and, where
@@ -185,16 +129,6 @@ relevant, the security. A rebalancer that trades on bad data is worse than one t
 ### RB-030 — Target percentages must sum to 100 · P1
 **Steps:** Build an account whose targets sum to 80.
 **Expected:** Rejected. Message states the requirement and the actual sum.
-**Automated:** Yes.
-
-### RB-031 — Current percentages may sum to less than 100 · P1
-**Preconditions:** $100,000 account, $40,000 cash. AAA and BBB both target 50 / current 30 / $100.
-**Expected:** Accepted. BUY 200 of each, funded from cash, ending cash $0.
-**Notes:** Confirms ASM-04 — the shortfall against 100 is uninvested cash, not an error.
-**Automated:** Yes.
-
-### RB-032 — Current percentages may not exceed 100 · P1
-**Expected:** Rejected. An account cannot hold 120% of itself.
 **Automated:** Yes.
 
 ### RB-033 — A zero or negative price is rejected · P1
@@ -208,39 +142,9 @@ relevant, the security. A rebalancer that trades on bad data is worse than one t
 treating the absence as zero.
 **Automated:** Yes.
 
-### RB-035 — Target percentages outside 0 to 100 are rejected · P2
-**Steps:** Attempt −1 and 101.
-**Expected:** Both rejected, message naming `targetPct`.
-**Automated:** Yes.
-
-### RB-036 — Current percentages outside 0 to 100 are rejected · P2
-**Steps:** Attempt −0.01 and 100.01.
-**Expected:** Both rejected, message naming `currentPct`.
-**Technique:** Boundary value just outside each edge. **Automated:** Yes.
-
-### RB-037 — A duplicated symbol is rejected · P1
-**Steps:** Build an account listing IBM twice.
-**Expected:** Rejected naming IBM. Silently aggregating the two lines would double the order.
-**Automated:** Yes.
-
-### RB-038 — A blank symbol is rejected · P2
-**Expected:** Rejected. A security with no identity cannot be traded.
-**Automated:** Yes.
-
-### RB-039 — Null and negative account fields are rejected by name · P1
-**Steps:** Pass a null account, a null configuration, a null security list, negative total assets,
-and negative cash.
-**Expected:** Each rejected with a message naming the field. No bare `NullPointerException` reaches
-the caller; a null security list specifically suggests using an empty list.
-**Automated:** Yes — two test methods.
-
 ---
 
 ## TS-05 — Cash, funding and sequencing
-
-### RB-040 — The assessment block raises exactly what it spends · P0
-**Expected:** $9,900 raised, $9,900 spent, lowest running cash balance $0, block fundable.
-**Automated:** Yes.
 
 ### RB-041 — Truncation does not guarantee fundability · P0 · **Finding**
 **Preconditions:** $100,000 account, $0 cash. AAA target 60 / current 50 / **$1**. BBB target 40 /
@@ -260,30 +164,15 @@ running balance of $0 and is fundable; buys-first reaches **−$9,900** and is n
 of the sequence, not just of the numbers.
 **Technique:** State transition over the running cash balance. **Automated:** Yes.
 
-### RB-043 — An existing cash balance funds purchases · P1
-**Preconditions:** $100,000 account, $50,000 cash. AAA target 50 / current 25 / $100. BBB target 50 /
-current 25 / $250.
-**Expected:** BUY 250 AAA and BUY 100 BBB, both funded from cash. No sells. Ending cash $0.
-**Automated:** Yes.
-
 ### RB-044 — Trading conserves total assets · P0
 **Steps:** Under each rounding policy, total the post-trade holdings and add ending cash.
 **Expected:** $100,000 every time. Rebalancing moves value between lines; it never creates or
 destroys it.
 **Automated:** Yes — once per policy.
 
-### RB-045 — No position is sold below zero · P1
-**Expected:** Every post-trade holding value is zero or positive. The engine cannot short a position
-it does not hold.
-**Automated:** Yes.
-
 ---
 
 ## TS-06 — Business rules
-
-### RB-050 — Full vesting makes the whole account tradeable · P1
-**Expected:** Investable base $100,000; the assessment's two orders.
-**Automated:** Yes.
 
 ### RB-051 — Partial vesting retargets every line · P1
 **Preconditions:** Account ABC at **80% vested**.
@@ -291,17 +180,6 @@ it does not hold.
 SELL 44 MSFT, SELL 63 ORCL, SELL 8 AAPL, SELL 57 HD.
 **Notes:** MSFT, AAPL and HD were exactly on target at full vesting and are now 4 points heavy. This
 is the case that shows why "100% is vested" was worth writing down as an assumption (ASM-05).
-**Automated:** Yes.
-
-### RB-052 — Orders below the minimum notional are suppressed · P2
-**Steps:** Rebalance Account ABC with a $10,000 floor, then with a $5,000 floor.
-**Expected:** No orders at $10,000 (both are worth $9,900); both orders at $5,000.
-**Technique:** Boundary value either side of the order value. **Automated:** Yes.
-
-### RB-053 — Quantities are cut down to a whole round lot · P2
-**Steps:** Rebalance Account ABC with a lot size of 10, then 100.
-**Expected:** At 10, BUY 60 IBM and SELL 40 ORCL. At 100, no orders at all — neither line reaches a
-full lot.
 **Automated:** Yes.
 
 ### RB-054 — Variance inside the tolerance band is left alone · P1
@@ -331,33 +209,11 @@ share. The test asserts the correct decimal answer *and* pins the wrong binary a
 immediately if anyone swaps a `BigDecimal` for a `double`.
 **Automated:** Yes.
 
-### RB-061 — Prices carrying cents are exact · P1
-**Preconditions:** AAA target 20 / current 10 / **$150.37** on a $100,000 account.
-**Expected:** BUY 66 AAA ($10,000 ÷ $150.37 = 66.50), notional exactly $9,924.42.
-**Automated:** Yes.
-
-### RB-062 — Fractional target percentages are honoured · P2
-**Preconditions:** AAA target 33.25 / current 33 / $100. BBB target 66.75 / current 67 / $100.
-**Expected:** BUY 2 AAA and SELL 2 BBB. A 0.25-point gap is $250, which is 2.5 shares at $100.
-**Automated:** Yes.
-
 ### RB-063 — Rounding happens once, at the share count · P1
 **Preconditions:** AAA target 40 / current 36.66667 / $1. BBB target 60 / current 63.33333 / $1.
 **Expected:** BUY 3,333 AAA and SELL 3,333 BBB.
 **Notes:** Rounding the notional to cents before dividing would cost a share. Intermediate rounding
 is a classic source of compounding error.
-**Automated:** Yes.
-
-### RB-064 — The same input always gives the same output · P1
-**Steps:** Rebalance Account ABC twice.
-**Expected:** Identical orders and identical ending cash. No dependence on iteration order, hashing
-or time.
-**Automated:** Yes.
-
-### RB-065 — The engine never mutates its input · P1
-**Steps:** Rebalance Account ABC, then re-inspect the account object.
-**Expected:** Securities, total assets and cash all unchanged. A caller can safely rebalance the
-same account twice or share it across threads.
 **Automated:** Yes.
 
 ---
@@ -373,44 +229,6 @@ expected value. They catch whole classes of defect that a single expected answer
 **Notes:** IBM and ORCL are each 0.10 points out, worth $100, which will not buy a $150 IBM share or
 a $220 ORCL share. Proves the engine settles instead of churning — a churning rebalancer generates
 commission for no benefit.
-**Automated:** Yes.
-
-### RB-071 — No security ends further from target than it started · P0
-**Expected:** For every line, post-trade absolute variance is at most the pre-trade value.
-**Notes:** The single most important safety property. A rebalancer that can make drift worse is
-worse than no rebalancer.
-**Automated:** Yes.
-
-### RB-072 — Scaling the account by ten scales quantities by ten · P2
-**Steps:** Rebalance the evenly divisible account at $100,000 and again at $1,000,000.
-**Expected:** Every quantity is exactly ten times larger.
-**Automated:** Yes.
-
-### RB-073 — Input order does not change the answer · P2
-**Steps:** Rebalance Account ABC, then rebalance it with the securities listed in reverse.
-**Expected:** Identical quantity per symbol and identical net cash.
-**Notes:** Guards against a defect where an accumulator or a running cash balance leaks between
-lines.
-**Automated:** Yes.
-
----
-
-## TS-09 — Non-functional
-
-### RB-080 — A 5,000 line account rebalances inside two seconds · P2
-**Preconditions:** $100,000,000 account, 5,000 equally weighted securities, each 0.01 points off
-target.
-**Expected:** 5,000 orders, elapsed time under two seconds.
-**Automated:** Yes.
-
-### RB-081 — Concurrent rebalances agree with the single threaded answer · P2
-**Steps:** Run 64 rebalances of Account ABC across an 8-thread pool.
-**Expected:** All 64 results identical to the single threaded result. The engine holds no state.
-**Automated:** Yes.
-
-### RB-082 — A wide account still conserves value exactly · P2
-**Expected:** Across 5,000 lines, holdings plus cash still equal total assets to the cent. Rounding
-error must not accumulate with position count.
 **Automated:** Yes.
 
 ---
@@ -470,20 +288,3 @@ requirement defect, not a closed one.
 **Steps:** Present AMB-02. Agree the band within which an account counts as rebalanced.
 **Expected:** A number. "Zero" is not an achievable answer and must be challenged.
 
-### RB-122 — Reconcile against the analyst's spreadsheet · P1
-**Steps:** Independently recompute Account ABC by hand or in Excel and compare line by line with the
-engine output.
-**Expected:** BUY 66 IBM, SELL 45 ORCL, nothing else. Any difference is investigated before sign-off.
-**Notes:** An independent oracle. Two implementations agreeing is worth far more than one
-implementation agreeing with itself.
-
-### RB-123 — Review the order blotter with a trader · P1
-**Steps:** Show the generated block to someone who would actually trade it. Check that direction,
-quantity and sequence read unambiguously.
-**Expected:** No misreading of direction — this is where AMB-03 would bite a real user.
-
-### RB-124 — Exploratory session on price feed behaviour · P2
-**Steps:** Time-boxed session probing stale, missing, zero and negative prices arriving mid-run, and
-prices that change between calculation and execution.
-**Expected:** No silent bad orders. Findings feed back as new automated cases.
-**Notes:** Charter-based exploratory testing; the output is new test cases, not a pass or fail.

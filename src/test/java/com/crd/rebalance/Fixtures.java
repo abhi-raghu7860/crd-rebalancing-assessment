@@ -23,16 +23,4 @@ final class Fixtures {
                 Security.of("AAPL", "20", "20", "450"),
                 Security.of("HD", "20", "20", "70")));
     }
-
-    /** Account ABC with one field replaced, for boundary and negative cases. */
-    static Account accountAbcWith(List<Security> securities) {
-        return Account.fullyVested("ABC", "100000", securities);
-    }
-
-    /** A two-line account whose gaps divide exactly, so rounding plays no part. */
-    static Account evenlyDivisibleAccount() {
-        return Account.fullyVested("EVEN", "100000", List.of(
-                Security.of("AAA", "50", "40", "100"),
-                Security.of("BBB", "50", "60", "200")));
-    }
 }

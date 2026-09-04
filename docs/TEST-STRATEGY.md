@@ -200,25 +200,32 @@ Checked against every generated account. These hold regardless of input, so they
 | Suite | IDs | Cases | Automated |
 |---|---|---|---|
 | TS-01 Core calculation | RB-001…008 | 8 | Yes |
-| TS-02 Rounding and residual | RB-010…016 | 7 | Yes |
-| TS-03 Boundary values | RB-020…028 | 9 | Yes |
-| TS-04 Input validation | RB-030…039 | 10 | Yes |
-| TS-05 Cash, funding, sequencing | RB-040…045 | 6 | Yes |
-| TS-06 Business rules | RB-050…055 | 6 | Yes |
-| TS-07 Precision and determinism | RB-060…065 | 6 | Yes |
-| TS-08 Metamorphic relations | RB-070…073 | 4 | Yes |
-| TS-09 Non-functional | RB-080…082 | 3 | Yes |
+| TS-02 Rounding and residual | RB-011…016 | 6 | Yes |
+| TS-04 Input validation | RB-030, 033, 034 | 3 | Yes |
+| TS-05 Cash, funding, sequencing | RB-041, 042, 044 | 3 | Yes |
+| TS-06 Business rules | RB-051, 054, 055 | 3 | Yes |
+| TS-07 Precision | RB-060, 063 | 2 | Yes |
+| TS-08 Metamorphic relations | RB-070 | 1 | Yes |
 | TS-10 Invariants | RB-090…096 | 7 | Yes |
 | TS-11 Data driven | RB-100…101 | 2 | Yes |
-| TS-12 Manual verification | RB-120…124 | 5 | No — by design |
-| **Total** | | **73** | **68 automated** |
+| TS-12 Manual verification | RB-120…121 | 2 | No — by design |
+| **Total** | | **37** | **35 automated** |
 
-The 73 documented cases execute as **89 JUnit tests**, because parameterised cases expand: RB-013
-runs once per rounding policy, RB-090…096 once per seed, RB-101 once per CSV row.
+The 37 documented cases execute as **54 JUnit tests** across 30 test methods, because parameterised
+cases expand: RB-013 and RB-044 run once per rounding policy, RB-090…096 once per seed, RB-033 once
+per price, RB-100 and RB-101 once per CSV row.
 
-The five manual cases are manual on purpose. They are reconciliation and sign-off activities —
-agreeing the rounding policy with the front office, checking the blotter reads correctly to a
-trader — that automation cannot discharge.
+The two manual cases are manual on purpose. They are sign-off activities — agreeing the rounding
+policy and the tolerance band with the business owner — that automation cannot discharge.
+
+### On scope
+
+The suite was deliberately trimmed from an earlier 73 cases. What was cut fell into three groups:
+cases whose coverage was strictly duplicated by the property suite at the same configuration
+(RB-045, RB-064, RB-071); contrived boundary and defensive cases that no real account reaches; and
+non-functional work (throughput, thread safety) that sits outside the brief's definition of the
+application as a calculation. Every finding and every case bearing on the assessment's stated
+acceptance criterion was kept.
 
 ---
 

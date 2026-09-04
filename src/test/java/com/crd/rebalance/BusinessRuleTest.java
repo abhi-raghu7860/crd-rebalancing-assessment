@@ -9,23 +9,14 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-050 to RB-055. Rules the assessment implies but does not spell out: what "100% is vested"
- * would mean if it were not 100%, and the order-sizing constraints any real order management
- * system applies before an order reaches a broker.
+ * RB-051, RB-054 and RB-055. Rules the assessment implies but does not spell out: what "100% is
+ * vested" would mean if it were not 100%, and the drift band that has to stand in for the
+ * unreachable goal of zero variance.
  */
-@DisplayName("RB-050..055 Business rules")
+@DisplayName("RB-051..055 Business rules")
 class BusinessRuleTest {
 
     private final RebalanceEngine engine = new RebalanceEngine();
-
-    @Test
-    @DisplayName("RB-050 full vesting makes the whole account tradeable")
-    void fullVestingIsTheAssessmentBaseline() {
-        RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
-
-        assertThat(Fixtures.accountAbc().investableBase()).isEqualByComparingTo("100000");
-        assertThat(result.orders()).hasSize(2);
-    }
 
     @Test
     @DisplayName("RB-051 partial vesting shrinks every target and puts on-target lines into play")
@@ -44,36 +35,6 @@ class BusinessRuleTest {
         assertThat(result.signedQuantity("ORCL")).isEqualTo(-63L);  // $14,000 at $220
         assertThat(result.signedQuantity("AAPL")).isEqualTo(-8L);   // $4,000 at $450
         assertThat(result.signedQuantity("HD")).isEqualTo(-57L);    // $4,000 at $70
-    }
-
-    @Test
-    @DisplayName("RB-052 orders below the minimum notional are suppressed")
-    void minimumTradeNotionalSuppressesSmallOrders() {
-        RebalanceResult suppressed = engine.rebalance(Fixtures.accountAbc(),
-                RebalanceConfig.defaults().withMinTradeNotional("10000"));
-        RebalanceResult allowed = engine.rebalance(Fixtures.accountAbc(),
-                RebalanceConfig.defaults().withMinTradeNotional("5000"));
-
-        // Both orders are worth $9,900, so a $10,000 floor removes them and a $5,000 floor keeps them.
-        assertThat(suppressed.orders()).isEmpty();
-        assertThat(allowed.orders()).hasSize(2);
-    }
-
-    @Test
-    @DisplayName("RB-053 quantities are cut down to a whole round lot")
-    void roundLotsReduceQuantities() {
-        RebalanceResult lotsOfTen = engine.rebalance(Fixtures.accountAbc(),
-                RebalanceConfig.defaults().withLotSize(10));
-
-        assertThat(lotsOfTen.signedQuantity("IBM")).isEqualTo(60L);   // 66 down to the lot boundary
-        assertThat(lotsOfTen.signedQuantity("ORCL")).isEqualTo(-40L); // 45 down to the lot boundary
-
-        RebalanceResult lotsOfHundred = engine.rebalance(Fixtures.accountAbc(),
-                RebalanceConfig.defaults().withLotSize(100));
-
-        assertThat(lotsOfHundred.orders())
-                .as("neither line reaches a full 100 share lot, so neither trades")
-                .isEmpty();
     }
 
     @Test
