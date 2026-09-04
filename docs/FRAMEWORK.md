@@ -10,6 +10,9 @@ start target\extent-report\index.html       # open the HTML report
 
 Java 21. Maven via wrapper (nothing to install). `.\` prefix is required in PowerShell only.
 
+In IntelliJ, use the shared run configurations in `.run/`: **All Tests**, **Golden Scenario**,
+**Clean Test With Report**. They appear in the run dropdown with no setup.
+
 Output:
 - `target/extent-report/index.html` - ExtentReports dashboard, offline, open in any browser
 - `target/surefire-reports/` - raw JUnit XML for CI

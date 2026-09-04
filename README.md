@@ -29,7 +29,7 @@ Exact 20.00% would need 66.6667 and 45.4545 shares, and whole shares cannot expr
 
 ---
 
-## Two things I would raise before writing any code
+## Two things to highlight
 
 **1. The rounding rule is unspecified, and the choice is an overdraft risk.** Round half up instead
 of truncating and IBM becomes **BUY 67**, costing $10,050 against $9,900 raised — a $150 shortfall on
@@ -59,6 +59,21 @@ The `.\` prefix is required in PowerShell. In CMD use `mvnw.cmd test`; on macOS 
 `./mvnw test`. The project also imports into IntelliJ directly from `pom.xml`.
 
 **Current status: 89 tests, all passing.**
+
+### In IntelliJ
+
+Three shared Maven run configurations ship in `.run/` and appear in the run dropdown as soon as the
+project is opened. No setup, and they are version controlled rather than living in local IDE state.
+
+| Configuration | Goals | Use |
+|---|---|---|
+| **All Tests** | `test` | The full suite, 89 tests |
+| **Golden Scenario** | `test -Dtest=GoldenScenarioTest` | Just the assessment answer, 10 tests, about 2 seconds |
+| **Clean Test With Report** | `clean test` | Full rebuild, then a fresh HTML report |
+
+IntelliJ picks up the Maven wrapper automatically from `.mvn/wrapper/`, so it uses the same Maven
+version as the command line. If it ever prompts for a Maven home, point it at the wrapper rather
+than a system install.
 
 ### Test report
 
