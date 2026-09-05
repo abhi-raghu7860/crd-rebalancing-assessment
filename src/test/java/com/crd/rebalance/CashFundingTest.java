@@ -12,18 +12,18 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-041, RB-042 and RB-044. Account ABC is 100% invested and holds no cash, so every purchase has
+ * RB-018, RB-019 and RB-020. Account ABC is 100% invested and holds no cash, so every purchase has
  * to be paid for out of the matching sales. That makes funding and sequencing part of correctness
  * rather than an operational afterthought, and it is where the most damaging defects hide: an
  * order block can be arithmetically perfect and still be unexecutable.
  */
-@DisplayName("RB-041..044 Cash, funding and sequencing")
+@DisplayName("RB-018..020 Cash, funding and sequencing")
 class CashFundingTest {
 
     private final RebalanceEngine engine = new RebalanceEngine();
 
     @Test
-    @DisplayName("RB-042 the same orders in the wrong sequence overdraw the account")
+    @DisplayName("RB-019 the same orders in the wrong sequence overdraw the account")
     void sequencingDecidesWhetherTheBlockCanBeFunded() {
         Account account = Fixtures.accountAbc();
 
@@ -52,7 +52,7 @@ class CashFundingTest {
     }
 
     @Test
-    @DisplayName("RB-041 truncation prevents overshoot but does not guarantee the block is fundable")
+    @DisplayName("RB-018 truncation prevents overshoot but does not guarantee the block is fundable")
     void truncationCanStillLeaveAShortfall() {
         // The offsetting $10,000 gaps hide a trap. The buy line divides exactly and loses nothing
         // to truncation; the sell line divides into 3333.33 and loses $1 of proceeds. The block
@@ -81,7 +81,7 @@ class CashFundingTest {
 
     @ParameterizedTest
     @EnumSource(RoundingPolicy.class)
-    @DisplayName("RB-044 trading moves value between lines without creating or destroying any")
+    @DisplayName("RB-020 trading moves value between lines without creating or destroying any")
     void totalAssetsAreConserved(RoundingPolicy policy) {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc(),
                 RebalanceConfig.defaults().withRoundingPolicy(policy));

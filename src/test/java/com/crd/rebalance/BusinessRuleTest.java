@@ -9,17 +9,17 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-051, RB-054 and RB-055. Rules the assessment implies but does not spell out: what "100% is
+ * RB-021, RB-022 and RB-023. Rules the assessment implies but does not spell out: what "100% is
  * vested" would mean if it were not 100%, and the drift band that has to stand in for the
  * unreachable goal of zero variance.
  */
-@DisplayName("RB-051..055 Business rules")
+@DisplayName("RB-021..023 Business rules")
 class BusinessRuleTest {
 
     private final RebalanceEngine engine = new RebalanceEngine();
 
     @Test
-    @DisplayName("RB-051 partial vesting shrinks every target and puts on-target lines into play")
+    @DisplayName("RB-021 partial vesting shrinks every target and puts on-target lines into play")
     void partialVestingRetargetsEveryLine() {
         // At 80% vested only $80,000 can be allocated, so each 20% target is worth 16% of the
         // account. MSFT, AAPL and HD were exactly on target at full vesting and are now 4 points
@@ -38,7 +38,7 @@ class BusinessRuleTest {
     }
 
     @Test
-    @DisplayName("RB-054 variance inside the tolerance band is left alone")
+    @DisplayName("RB-022 variance inside the tolerance band is left alone")
     void toleranceBandSuppressesDrift() {
         RebalanceResult inside = engine.rebalance(Fixtures.accountAbc(),
                 RebalanceConfig.defaults().withToleranceBandPct("10"));
@@ -52,7 +52,7 @@ class BusinessRuleTest {
     }
 
     @Test
-    @DisplayName("RB-055 zero variance is unreachable, so the band is the real acceptance criterion")
+    @DisplayName("RB-023 zero variance is unreachable, so the band is the real acceptance criterion")
     void exactZeroVarianceIsUnreachable() {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
 

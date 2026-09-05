@@ -14,7 +14,7 @@ import java.util.Random;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-090 to RB-096. Property-based testing. Instead of asserting one expected answer, each seed
+ * RB-027 to RB-033. Property-based testing. Instead of asserting one expected answer, each seed
  * generates hundreds of randomly shaped but structurally valid accounts and checks the rules that
  * must hold for every one of them. This is where a defect that only shows up on an unusual price
  * or an eight-line portfolio gets caught.
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * account that broke. Generation uses only {@link Random} from the JDK, so the suite carries no
  * property-testing dependency.
  */
-@DisplayName("RB-090..096 Invariants over generated accounts")
+@DisplayName("RB-027..033 Invariants over generated accounts")
 class InvariantPropertyTest {
 
     private static final BigDecimal HUNDRED = new BigDecimal("100");
@@ -52,7 +52,7 @@ class InvariantPropertyTest {
         }
     }
 
-    /** RB-090 a line already on target is never traded, whatever else is happening around it. */
+    /** RB-027 a line already on target is never traded, whatever else is happening around it. */
     private void assertZeroVarianceNeverTrades(Account account, RebalanceResult result, String context) {
         for (Security security : account.securities()) {
             if (security.variancePct().signum() == 0) {
@@ -63,7 +63,7 @@ class InvariantPropertyTest {
         }
     }
 
-    /** RB-091 an underweight line can only ever buy, and an overweight line can only ever sell. */
+    /** RB-028 an underweight line can only ever buy, and an overweight line can only ever sell. */
     private void assertDirectionOpposesVariance(Account account, RebalanceResult result, String context) {
         for (Security security : account.securities()) {
             long quantity = result.signedQuantity(security.symbol());
@@ -78,7 +78,7 @@ class InvariantPropertyTest {
         }
     }
 
-    /** RB-092 truncation moves a position toward its target and never past it. */
+    /** RB-029 truncation moves a position toward its target and never past it. */
     private void assertVarianceNeverWorsens(Account account, RebalanceResult result, String context) {
         for (Security security : account.securities()) {
             BigDecimal before = security.variancePct().abs();
@@ -89,7 +89,7 @@ class InvariantPropertyTest {
         }
     }
 
-    /** RB-093 whatever is left untraded is worth less than a single share of that security. */
+    /** RB-030 whatever is left untraded is worth less than a single share of that security. */
     private void assertResidualIsUnderOneShare(Account account, RebalanceResult result, String context) {
         for (Security security : account.securities()) {
             BigDecimal targetValue = security.targetPct()
@@ -104,7 +104,7 @@ class InvariantPropertyTest {
         }
     }
 
-    /** RB-094 rebalancing rearranges value; it never creates or destroys any. */
+    /** RB-031 rebalancing rearranges value; it never creates or destroys any. */
     private void assertValueIsConserved(Account account, RebalanceResult result, String context) {
         BigDecimal holdings = result.postTradeValues().values().stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -114,7 +114,7 @@ class InvariantPropertyTest {
                 .isEqualByComparingTo(account.totalAssets());
     }
 
-    /** RB-095 the engine never sells more of a security than the account holds. */
+    /** RB-032 the engine never sells more of a security than the account holds. */
     private void assertNoPositionGoesNegative(RebalanceResult result, String context) {
         result.postTradeValues().forEach((symbol, value) ->
                 assertThat(value)
@@ -122,7 +122,7 @@ class InvariantPropertyTest {
                         .isGreaterThanOrEqualTo(BigDecimal.ZERO));
     }
 
-    /** RB-096 the same account rebalanced twice gives byte-identical orders. */
+    /** RB-033 the same account rebalanced twice gives byte-identical orders. */
     private void assertDeterministic(Account account, RebalanceResult result, String context) {
         assertThat(engine.rebalance(account).orders())
                 .as("%s: repeated runs must agree", context)

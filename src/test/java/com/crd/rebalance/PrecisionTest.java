@@ -9,17 +9,17 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-060 and RB-063. Money arithmetic has to be decimal, and it has to round exactly once. Both
+ * RB-024 and RB-025. Money arithmetic has to be decimal, and it has to round exactly once. Both
  * tests are built from values where a wrong approach gives a visibly different answer, so they fail
  * loudly rather than drifting quietly.
  */
-@DisplayName("RB-060..063 Precision")
+@DisplayName("RB-024..025 Precision")
 class PrecisionTest {
 
     private final RebalanceEngine engine = new RebalanceEngine();
 
     @Test
-    @DisplayName("RB-060 a price of $0.07 exposes binary floating point error")
+    @DisplayName("RB-024 a price of $0.07 exposes binary floating point error")
     void decimalArithmeticBeatsBinaryFloatingPoint() {
         // The gap is $7,000 and the price is $0.07, which is exactly 100,000 shares.
         // In a double, 7000 / 0.07 evaluates to 99999.99999999999, and truncating that to a whole
@@ -42,7 +42,7 @@ class PrecisionTest {
     }
 
     @Test
-    @DisplayName("RB-063 rounding happens once, at the share count, not on the way there")
+    @DisplayName("RB-025 rounding happens once, at the share count, not on the way there")
     void roundingIsAppliedOnlyAtTheShareStep() {
         // The gap is $3,333.33... If the notional were rounded to cents before dividing, the
         // quantity would come out one share short of the exact division.

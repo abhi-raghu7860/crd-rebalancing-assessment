@@ -137,13 +137,13 @@ generates real orders against real money; a wrong quantity is not a cosmetic bug
 |---|---|---|---|---|
 | Sign flip: buys where sells belong | Severe — doubles the drift and trades twice | Medium | **P0** | Direction asserted separately from magnitude; property test over 1,400 accounts |
 | Percentage points read as relative percent | Severe — orders 10× too small | Medium | **P0** | Explicit notional assertion (RB-006) |
-| Rounding overdraws a fully invested account | High — order rejected or margin call | High | **P0** | All three policies pinned (RB-014/015) |
-| Buys sequenced ahead of funding sells | High — block rejected at the broker | Medium | **P0** | Running-cash check (RB-042) |
-| Binary float drift in money maths | Moderate individually, compounds across a book | Medium | **P1** | `BigDecimal` throughout; RB-060 fails if anyone reverts to `double` |
-| Divide-by-zero on a zero or missing price | Moderate — crash or nonsense quantity | Medium | **P1** | Rejected at construction (RB-032/034) |
-| Silent double-count of a duplicated symbol | Moderate | Low | **P1** | Rejected at construction (RB-037) |
-| Overflow or precision loss on a large account | Moderate | Low | **P2** | Trillion-dollar case (RB-027) |
-| Performance across a wide book | Low | Low | **P2** | 5,000 lines under two seconds (RB-080) |
+| Rounding overdraws a fully invested account | High — order rejected or margin call | High | **P0** | All three policies pinned (RB-012/013) |
+| Buys sequenced ahead of funding sells | High — block rejected at the broker | Medium | **P0** | Running-cash check (RB-019) |
+| Binary float drift in money maths | Moderate individually, compounds across a book | Medium | **P1** | `BigDecimal` throughout; RB-024 fails if anyone reverts to `double` |
+| Divide-by-zero on a zero or missing price | Moderate — crash or nonsense quantity | Medium | **P1** | Rejected at construction (RB-016/017) |
+| Silent double-count of a duplicated symbol | Moderate | Low | **P1** | Rejected in the `Account` constructor; no longer covered by a test |
+| Overflow or precision loss on a large account | Moderate | Low | **P2** | Guarded by `longValueExact()`; no longer covered by a test |
+| Performance across a wide book | Low | Low | **P2** | Not covered — outside the brief's definition of the application |
 
 ---
 
@@ -200,20 +200,20 @@ Checked against every generated account. These hold regardless of input, so they
 | Suite | IDs | Cases | Automated |
 |---|---|---|---|
 | TS-01 Core calculation | RB-001…008 | 8 | Yes |
-| TS-02 Rounding and residual | RB-011…016 | 6 | Yes |
-| TS-04 Input validation | RB-030, 033, 034 | 3 | Yes |
-| TS-05 Cash, funding, sequencing | RB-041, 042, 044 | 3 | Yes |
-| TS-06 Business rules | RB-051, 054, 055 | 3 | Yes |
-| TS-07 Precision | RB-060, 063 | 2 | Yes |
-| TS-08 Metamorphic relations | RB-070 | 1 | Yes |
-| TS-10 Invariants | RB-090…096 | 7 | Yes |
-| TS-11 Data driven | RB-100…101 | 2 | Yes |
-| TS-12 Manual verification | RB-120…121 | 2 | No — by design |
+| TS-02 Rounding and residual | RB-009…014 | 6 | Yes |
+| TS-04 Input validation | RB-015…017 | 3 | Yes |
+| TS-05 Cash, funding, sequencing | RB-018…020 | 3 | Yes |
+| TS-06 Business rules | RB-021…023 | 3 | Yes |
+| TS-07 Precision | RB-024…025 | 2 | Yes |
+| TS-08 Metamorphic relations | RB-026 | 1 | Yes |
+| TS-10 Invariants | RB-027…033 | 7 | Yes |
+| TS-11 Data driven | RB-034…035 | 2 | Yes |
+| TS-12 Manual verification | RB-036…037 | 2 | No — by design |
 | **Total** | | **37** | **35 automated** |
 
 The 37 documented cases execute as **54 JUnit tests** across 30 test methods, because parameterised
-cases expand: RB-013 and RB-044 run once per rounding policy, RB-090…096 once per seed, RB-033 once
-per price, RB-100 and RB-101 once per CSV row.
+cases expand: RB-011 and RB-020 run once per rounding policy, RB-027…033 once per seed, RB-016 once
+per price, RB-034 and RB-035 once per CSV row.
 
 The two manual cases are manual on purpose. They are sign-off activities — agreeing the rounding
 policy and the tolerance band with the business owner — that automation cannot discharge.
@@ -221,8 +221,8 @@ policy and the tolerance band with the business owner — that automation cannot
 ### On scope
 
 The suite was deliberately trimmed from an earlier 73 cases. What was cut fell into three groups:
-cases whose coverage was strictly duplicated by the property suite at the same configuration
-(RB-045, RB-064, RB-071); contrived boundary and defensive cases that no real account reaches; and
+three cases whose coverage was strictly duplicated by the property suite at the same
+configuration; contrived boundary and defensive cases that no real account reaches; and
 non-functional work (throughput, thread safety) that sits outside the brief's definition of the
 application as a calculation. Every finding and every case bearing on the assessment's stated
 acceptance criterion was kept.

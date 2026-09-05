@@ -9,18 +9,18 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-100 and RB-101. The acceptance data lives in CSV rather than in Java, so a business analyst
+ * RB-034 and RB-035. The acceptance data lives in CSV rather than in Java, so a business analyst
  * can add a scenario without touching code and the same files can be handed to the team that owns
  * the requirement. {@code account-abc.csv} is the assessment's own answer key.
  */
-@DisplayName("RB-100..101 Data driven scenarios")
+@DisplayName("RB-034..035 Data driven scenarios")
 class DataDrivenTest {
 
     private final RebalanceEngine engine = new RebalanceEngine();
 
-    @ParameterizedTest(name = "RB-100 {0} expects {4}")
+    @ParameterizedTest(name = "RB-034 {0} expects {4}")
     @CsvFileSource(resources = "/test-data/account-abc.csv", numLinesToSkip = 1)
-    @DisplayName("RB-100 every line of account ABC produces its expected quantity")
+    @DisplayName("RB-034 every line of account ABC produces its expected quantity")
     void accountAbcMatchesTheAnswerKey(String symbol, String targetPct, String currentPct,
                                        String unitPrice, long expectedSignedQuantity) {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc());
@@ -38,9 +38,9 @@ class DataDrivenTest {
         assertThat(result.signedQuantity(symbol)).isEqualTo(expectedSignedQuantity);
     }
 
-    @ParameterizedTest(name = "RB-101 {0}")
+    @ParameterizedTest(name = "RB-035 {0}")
     @CsvFileSource(resources = "/test-data/two-line-scenarios.csv", numLinesToSkip = 1)
-    @DisplayName("RB-101 two line scenarios")
+    @DisplayName("RB-035 two line scenarios")
     void twoLineScenarios(String description, String totalAssets,
                           String targetA, String currentA, String priceA,
                           String targetB, String currentB, String priceB,

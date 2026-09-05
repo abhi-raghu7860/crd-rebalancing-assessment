@@ -12,18 +12,18 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-011 to RB-016. The specification never states how a fractional share count becomes a whole
+ * RB-009 to RB-014. The specification never states how a fractional share count becomes a whole
  * one, and the three defensible answers disagree on this very data set. These tests pin what each
  * policy actually does so the choice is a decision on record rather than an accident of
  * implementation (ambiguity AMB-01).
  */
-@DisplayName("RB-011..016 Rounding policy and residual")
+@DisplayName("RB-009..014 Rounding policy and residual")
 class RoundingPolicyTest {
 
     private final RebalanceEngine engine = new RebalanceEngine();
 
     @Test
-    @DisplayName("RB-011/012 TRUNCATE rounds both sides toward zero and stays cash neutral here")
+    @DisplayName("RB-009/010 TRUNCATE rounds both sides toward zero and stays cash neutral here")
     void truncateRoundsTowardZero() {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc(),
                 RebalanceConfig.defaults().withRoundingPolicy(RoundingPolicy.TRUNCATE));
@@ -35,7 +35,7 @@ class RoundingPolicyTest {
     }
 
     @Test
-    @DisplayName("RB-014 HALF_UP buys 67 IBM and overdraws the account by $150")
+    @DisplayName("RB-012 HALF_UP buys 67 IBM and overdraws the account by $150")
     void halfUpOverdrawsAFullyInvestedAccount() {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc(),
                 RebalanceConfig.defaults().withRoundingPolicy(RoundingPolicy.HALF_UP));
@@ -58,7 +58,7 @@ class RoundingPolicyTest {
     }
 
     @Test
-    @DisplayName("RB-015 ROUND_UP funds itself but overshoots ORCL past its target")
+    @DisplayName("RB-013 ROUND_UP funds itself but overshoots ORCL past its target")
     void roundUpOvershootsTheTarget() {
         RebalanceResult result = engine.rebalance(Fixtures.accountAbc(),
                 RebalanceConfig.defaults().withRoundingPolicy(RoundingPolicy.ROUND_UP));
@@ -80,7 +80,7 @@ class RoundingPolicyTest {
 
     @ParameterizedTest
     @EnumSource(RoundingPolicy.class)
-    @DisplayName("RB-013 whatever the policy, the unfilled remainder is smaller than one share")
+    @DisplayName("RB-011 whatever the policy, the unfilled remainder is smaller than one share")
     void residualIsAlwaysSmallerThanOneShare(RoundingPolicy policy) {
         Account account = Fixtures.accountAbc();
         RebalanceResult result = engine.rebalance(account, RebalanceConfig.defaults().withRoundingPolicy(policy));
@@ -99,7 +99,7 @@ class RoundingPolicyTest {
     }
 
     @Test
-    @DisplayName("RB-016 a gap worth less than one share produces no order at all")
+    @DisplayName("RB-014 a gap worth less than one share produces no order at all")
     void gapSmallerThanOneShareIsNotTradeable() {
         // AAA is 0.1 points light, a $100 gap, but a single share costs $450.
         // BBB is 0.1 points heavy, a $100 gap, and its shares cost $10 so it does trade.

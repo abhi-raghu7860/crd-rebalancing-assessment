@@ -77,24 +77,24 @@ and buy 6 shares. Both readings are grammatical; only one is right.
 
 ## TS-02 — Rounding policy and residual
 
-### RB-011 — A buy truncates downward · P0
+### RB-009 — A buy truncates downward · P0
 **Steps:** Rebalance Account ABC.
 **Expected:** IBM 66.6667 → BUY 66. Never 67 under the default policy.
 **Automated:** Yes.
 
-### RB-012 — A sell truncates toward zero · P0
+### RB-010 — A sell truncates toward zero · P0
 **Steps:** Rebalance Account ABC.
 **Expected:** ORCL 45.4545 → SELL 45.
 **Notes:** Toward zero, not toward negative infinity. On a sell the two differ.
 **Automated:** Yes.
 
-### RB-013 — The untraded remainder is smaller than one share · P1
+### RB-011 — The untraded remainder is smaller than one share · P1
 **Steps:** For each policy, compare each post-trade holding against its target value.
 **Expected:** Every residual is strictly less than that security's unit price. If it were not, the
 engine left a whole tradeable share on the table.
 **Automated:** Yes — runs once per policy.
 
-### RB-014 — Round-half-up overdraws the account · P0 · **Finding**
+### RB-012 — Round-half-up overdraws the account · P0 · **Finding**
 **Steps:** Rebalance Account ABC with round-half-up.
 **Expected:** **BUY 67 IBM** and SELL 45 ORCL. Net cash **−$150**. The block is reported as not
 fundable.
@@ -103,7 +103,7 @@ $9,900 raised. Account ABC is 100% invested and has no cash to cover the gap. Th
 consequence of AMB-01 and the reason truncation is recommended.
 **Automated:** Yes.
 
-### RB-015 — Rounding the magnitude up overshoots the target · P1 · **Finding**
+### RB-013 — Rounding the magnitude up overshoots the target · P1 · **Finding**
 **Steps:** Rebalance Account ABC with round-magnitude-up.
 **Expected:** BUY 67 IBM, SELL 46 ORCL, net cash +$70. ORCL lands at 19.88%, variance −0.12.
 **Notes:** ORCL started 0.10 points overweight and ends 0.12 points underweight — it has crossed its
@@ -111,7 +111,7 @@ target rather than approached it, so the position is now worse than a smaller tr
 it.
 **Automated:** Yes.
 
-### RB-016 — A gap worth less than one share does not trade · P1
+### RB-014 — A gap worth less than one share does not trade · P1
 **Preconditions:** Two-line account, $100,000. AAA target 20.1 / current 20 / $450. BBB target 79.9 /
 current 80 / $10.
 **Steps:** Rebalance.
@@ -126,17 +126,17 @@ ten $10 shares.
 All cases in this suite expect an `IllegalArgumentException` naming the offending field and, where
 relevant, the security. A rebalancer that trades on bad data is worse than one that refuses to run.
 
-### RB-030 — Target percentages must sum to 100 · P1
+### RB-015 — Target percentages must sum to 100 · P1
 **Steps:** Build an account whose targets sum to 80.
 **Expected:** Rejected. Message states the requirement and the actual sum.
 **Automated:** Yes.
 
-### RB-033 — A zero or negative price is rejected · P1
+### RB-016 — A zero or negative price is rejected · P1
 **Steps:** Attempt prices of 0, −1 and −150.50.
 **Expected:** All rejected before any division occurs.
 **Technique:** Error guessing plus boundary value at zero. **Automated:** Yes — one run per price.
 
-### RB-034 — A missing price is rejected as a failed feed · P1
+### RB-017 — A missing price is rejected as a failed feed · P1
 **Steps:** Supply a null unit price.
 **Expected:** Rejected, with a message identifying it as a stale or failed price feed rather than
 treating the absence as zero.
@@ -146,7 +146,7 @@ treating the absence as zero.
 
 ## TS-05 — Cash, funding and sequencing
 
-### RB-041 — Truncation does not guarantee fundability · P0 · **Finding**
+### RB-018 — Truncation does not guarantee fundability · P0 · **Finding**
 **Preconditions:** $100,000 account, $0 cash. AAA target 60 / current 50 / **$1**. BBB target 40 /
 current 50 / **$3**.
 **Steps:** Rebalance with the default truncating policy.
@@ -156,7 +156,7 @@ and loses $1 of proceeds. Truncation is cash-neutral on Account ABC by coinciden
 construction. A production system needs a cash buffer or must size buys against realised proceeds.
 **Technique:** Error guessing informed by the invariant analysis. **Automated:** Yes.
 
-### RB-042 — Sequencing decides whether the block can be funded · P0 · **Finding**
+### RB-019 — Sequencing decides whether the block can be funded · P0 · **Finding**
 **Steps:** Rebalance Account ABC twice, once emitting sells first and once buys first.
 **Expected:** Identical quantities and identical net cash both times. Sells-first reaches a lowest
 running balance of $0 and is fundable; buys-first reaches **−$9,900** and is not.
@@ -164,7 +164,7 @@ running balance of $0 and is fundable; buys-first reaches **−$9,900** and is n
 of the sequence, not just of the numbers.
 **Technique:** State transition over the running cash balance. **Automated:** Yes.
 
-### RB-044 — Trading conserves total assets · P0
+### RB-020 — Trading conserves total assets · P0
 **Steps:** Under each rounding policy, total the post-trade holdings and add ending cash.
 **Expected:** $100,000 every time. Rebalancing moves value between lines; it never creates or
 destroys it.
@@ -174,7 +174,7 @@ destroys it.
 
 ## TS-06 — Business rules
 
-### RB-051 — Partial vesting retargets every line · P1
+### RB-021 — Partial vesting retargets every line · P1
 **Preconditions:** Account ABC at **80% vested**.
 **Expected:** Investable base $80,000, so each 20% target is worth 16% of the account. BUY 40 IBM,
 SELL 44 MSFT, SELL 63 ORCL, SELL 8 AAPL, SELL 57 HD.
@@ -182,14 +182,14 @@ SELL 44 MSFT, SELL 63 ORCL, SELL 8 AAPL, SELL 57 HD.
 is the case that shows why "100% is vested" was worth writing down as an assumption (ASM-05).
 **Automated:** Yes.
 
-### RB-054 — Variance inside the tolerance band is left alone · P1
+### RB-022 — Variance inside the tolerance band is left alone · P1
 **Steps:** Rebalance Account ABC with a 10-point band, then a 9.99-point band.
 **Expected:** No orders at 10 points — a 10-point drift sits exactly on the band and does not breach
 it. Both orders at 9.99.
 **Technique:** Boundary value on the band itself, including the inclusive-versus-exclusive edge.
 **Automated:** Yes.
 
-### RB-055 — Zero variance is unreachable, so the band is the real criterion · P0 · **Finding**
+### RB-023 — Zero variance is unreachable, so the band is the real criterion · P0 · **Finding**
 **Expected:** Residual variance is greater than zero but no more than 0.5 points.
 **Notes:** Hitting 20.00% exactly needs 66.6667 IBM shares. "Get to zero target variance" has to be
 read as "get inside tolerance"; an acceptance test written as equality would fail a correct
@@ -200,7 +200,7 @@ implementation (AMB-02).
 
 ## TS-07 — Precision and determinism
 
-### RB-060 — Decimal arithmetic beats binary floating point · P1 · **Finding**
+### RB-024 — Decimal arithmetic beats binary floating point · P1 · **Finding**
 **Preconditions:** $100,000 account. AAA target 50 / current 43 / **$0.07**. BBB target 50 /
 current 57 / $10.
 **Expected:** BUY exactly **100,000** AAA. The gap is $7,000 and $7,000 ÷ $0.07 is exactly 100,000.
@@ -209,7 +209,7 @@ share. The test asserts the correct decimal answer *and* pins the wrong binary a
 immediately if anyone swaps a `BigDecimal` for a `double`.
 **Automated:** Yes.
 
-### RB-063 — Rounding happens once, at the share count · P1
+### RB-025 — Rounding happens once, at the share count · P1
 **Preconditions:** AAA target 40 / current 36.66667 / $1. BBB target 60 / current 63.33333 / $1.
 **Expected:** BUY 3,333 AAA and SELL 3,333 BBB.
 **Notes:** Rounding the notional to cents before dividing would cost a share. Intermediate rounding
@@ -223,7 +223,7 @@ is a classic source of compounding error.
 These change an input in a way whose effect is known in advance, rather than asserting a fixed
 expected value. They catch whole classes of defect that a single expected answer cannot.
 
-### RB-070 — Rebalancing an already rebalanced account does nothing · P1
+### RB-026 — Rebalancing an already rebalanced account does nothing · P1
 **Steps:** Rebalance Account ABC, apply the fills, then rebalance the resulting account.
 **Expected:** No orders on the second pass.
 **Notes:** IBM and ORCL are each 0.10 points out, worth $100, which will not buy a $150 IBM share or
@@ -241,13 +241,13 @@ cent to $500. Seeds are fixed, so any failure replays the exact account that cau
 
 | ID | Invariant | Priority |
 |---|---|---|
-| RB-090 | A line already on target is never traded | P0 |
-| RB-091 | Order direction is always opposite to the variance sign | P0 |
-| RB-092 | No position ends further from its target than it started | P0 |
-| RB-093 | Whatever is left untraded is worth less than one share of that security | P1 |
-| RB-094 | Holdings plus cash still equal total assets | P0 |
-| RB-095 | No position is sold below zero | P1 |
-| RB-096 | The same input always produces identical output | P1 |
+| RB-027 | A line already on target is never traded | P0 |
+| RB-028 | Order direction is always opposite to the variance sign | P0 |
+| RB-029 | No position ends further from its target than it started | P0 |
+| RB-030 | Whatever is left untraded is worth less than one share of that security | P1 |
+| RB-031 | Holdings plus cash still equal total assets | P0 |
+| RB-032 | No position is sold below zero | P1 |
+| RB-033 | The same input always produces identical output | P1 |
 
 **Automated:** Yes — seven seeds × 200 accounts.
 
@@ -255,14 +255,14 @@ cent to $500. Seeds are fixed, so any failure replays the exact account that cau
 
 ## TS-11 — Data driven acceptance
 
-### RB-100 — Account ABC matches the answer key · P0
+### RB-034 — Account ABC matches the answer key · P0
 **Data:** `src/test/resources/test-data/account-abc.csv`, one row per security with its expected
 signed quantity.
 **Expected:** Each row's quantity matches, and the fixture's own inputs match the row — so the
 fixture and the answer key cannot drift apart unnoticed.
 **Automated:** Yes — one run per row.
 
-### RB-101 — Two-line scenario table · P1
+### RB-035 — Two-line scenario table · P1
 **Data:** `src/test/resources/test-data/two-line-scenarios.csv`, nine scenarios covering exact
 division, truncation on each side, sub-share gaps, full exit and entry, penny prices, prices with
 cents, fractional percentages, and an already-on-target pair.
@@ -278,13 +278,13 @@ same file can be reviewed by the team that owns the requirement.
 These are reconciliation and sign-off activities. Automation cannot discharge them because the thing
 being checked is human agreement, not program behaviour.
 
-### RB-120 — Confirm the rounding policy with the business owner · P0
-**Steps:** Present AMB-01 and the RB-014 result to the product owner or front office. Get the
+### RB-036 — Confirm the rounding policy with the business owner · P0
+**Steps:** Present AMB-01 and the RB-012 result to the product owner or front office. Get the
 intended policy in writing.
 **Expected:** A recorded decision. Until then, the $150 overdraft under round-half-up is an open
 requirement defect, not a closed one.
 
-### RB-121 — Agree the tolerance band · P0
+### RB-037 — Agree the tolerance band · P0
 **Steps:** Present AMB-02. Agree the band within which an account counts as rebalanced.
 **Expected:** A number. "Zero" is not an achievable answer and must be challenged.
 

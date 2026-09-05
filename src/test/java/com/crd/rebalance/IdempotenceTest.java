@@ -10,10 +10,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RB-070. A metamorphic test: rather than asserting one expected answer, it changes the input in a
+ * RB-026. A metamorphic test: rather than asserting one expected answer, it changes the input in a
  * way whose effect on the output is known in advance and checks that the engine agrees.
  */
-@DisplayName("RB-070 Metamorphic relations")
+@DisplayName("RB-026 Metamorphic relations")
 class IdempotenceTest {
 
     private static final BigDecimal HUNDRED = new BigDecimal("100");
@@ -21,7 +21,7 @@ class IdempotenceTest {
     private final RebalanceEngine engine = new RebalanceEngine();
 
     @Test
-    @DisplayName("RB-070 rebalancing an already rebalanced account does nothing")
+    @DisplayName("RB-026 rebalancing an already rebalanced account does nothing")
     void rebalancingIsIdempotent() {
         Account account = Fixtures.accountAbc();
         RebalanceResult first = engine.rebalance(account);
